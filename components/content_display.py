@@ -7,7 +7,6 @@ def display_card_content(contents, selected_card_title):
     if not card_data.empty:
         for _, row in card_data.iterrows():
             st.subheader(row['block_title'])
-            st.markdown(f"**{row['subject']}** > **{row['card_title']}** ({row['card_type']}) > **{row['block_title']}** ({row['block_type']})")
             
             text_content = row['text']
             text_lines = text_content.split('\n')
@@ -34,7 +33,6 @@ def display_block_content(contents, selected_card_title, block_index):
         if block_index < len(card_data):
             block_data = card_data.iloc[block_index]
             st.subheader(block_data['block_title'])
-            st.markdown(f"**{block_data['subject']}** > **{block_data['card_title']}** ({block_data['card_type']}) > **{block_data['block_title']}** ({block_data['block_type']})")
             
             text_content = block_data['text']
             text_lines = text_content.split('\n')

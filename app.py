@@ -13,6 +13,8 @@ if 'current_block_index' not in st.session_state:
     st.session_state.current_block_index = 0
 if 'view' not in st.session_state:
     st.session_state.view = 'card'
+if 'content_tags' not in st.session_state:
+    st.session_state.content_tags = {}
 
 # Cargar los datos
 contents = load_contents('data/contents.csv')
@@ -25,7 +27,7 @@ if 'nav' not in st.session_state:
 nav = st.session_state.nav
 
 st.set_page_config(layout="wide")
-st.title('Aplicación de Etiquetado de Contenidos Educativos')
+st.title('Etiquetado de contenidos')
 
 # Importar CSS
 with open('assets/styles.css') as f:
@@ -39,13 +41,14 @@ card_data = contents[contents['card_title'] == current_card_title]
 # Crear columnas para contenido y formulario de etiquetado
 col1, col2 = st.columns([1, 1])
 
+# Hacer la columna 1 fija
 with col1:
-    st.header(f'Contenido de la Tarjeta: {current_card_title}')
+    st.markdown('<div class="fixed-column">', unsafe_allow_html=True)
+    st.header(f'Tarjeta: *{current_card_title}*')
     if not card_data.empty:
         for block_index, (i, row) in enumerate(card_data.iterrows()):
             with st.container():
                 st.subheader(row['block_title'])
-                st.markdown(f"**{row['subject']}** > **{row['card_title']}** ({row['card_type']}) > **{row['block_title']}** ({row['block_type']})")
                 text_content = row['text']
                 text_lines = text_content.split('\n')
                 for line in text_lines:
@@ -60,29 +63,26 @@ with col1:
                             st.write(line)
                     else:
                         st.write(line)
-                
+
                 # Botón para abrir el modal de etiquetado del bloque
                 modal = Modal(f"Etiquetar Bloque *{row['block_title']}*", key=f"modal-{block_index}")
                 if st.button(f"Etiquetar Bloque *{row['block_title']}*", key=f"button-{block_index}"):
                     modal.open()
-#  st.header(f"Etiquetas del Bloque: {block_data['block_title']}")
- 
+
                 if modal.is_open():
                     with modal.container():
-                        render_tag_form(tags_schema, current_card_title, contents, block_index)
-                        if st.button("Guardar Etiquetas", key=f"save-{block_index}"):
-                            st.session_state.saved = True
-                            st.experimental_rerun()
+                        render_tag_form(modal, tags_schema, current_card_title, contents, block_index)
     else:
         st.write("No se encontró contenido para la tarjeta seleccionada.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
-    # Mostrar un encabezado para el formulario de etiquetado general
-    st.header('Formulario de Etiquetado General')
-    render_tag_form(tags_schema, current_card_title, contents)
+    # Crear un contenedor con scroll para el formulario de etiquetado
+    st.header('Etiquetado de la tarjeta')
+    render_tag_form(Modal("Etiquetar Tarjeta", key="modal-card"), tags_schema, current_card_title, contents)
 
 # Botón para guardar progreso
-if st.button('Guardar Progreso'):
+if st.button('Guardar Progreso', key='save_progress'):
     block_output_path = 'data/contents_tagged.csv'
     card_output_path = 'data/cards_tagged.csv'
     save_tagged_data(contents, tags_schema, block_output_path, card_output_path)

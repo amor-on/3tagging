@@ -1,10 +1,10 @@
 import streamlit as st
-from streamlit_modal import Modal
 from utils.data_loader import load_contents, load_tags_schema
 from components.sidebar import render_sidebar
 from components.tag_form import render_tag_form
 from utils.save_data import save_tagged_data
 from utils.navigation import Navigation
+import pandas as pd
 
 # Inicializar el estado de la sesión
 if 'current_card_index' not in st.session_state:
@@ -20,13 +20,22 @@ if 'content_tags' not in st.session_state:
 contents = load_contents('data/contents.csv')
 tags_schema = load_tags_schema('data/tags_schema.json')
 
+# Asegurarse de que contents es un DataFrame
+if not isinstance(contents, pd.DataFrame):
+    raise TypeError("contents debe ser un DataFrame")
+
 # Inicializar la navegación
 if 'nav' not in st.session_state:
     st.session_state.nav = Navigation(contents)
 
 nav = st.session_state.nav
 
-st.set_page_config(layout="wide")
+st.set_page_config(
+    page_title="Etiquetado",
+    layout="wide",
+    page_icon=":large_red_square:"
+)
+
 st.title('Etiquetado de contenidos')
 
 # Importar CSS
@@ -49,6 +58,11 @@ with col1:
         for block_index, (i, row) in enumerate(card_data.iterrows()):
             with st.container():
                 st.subheader(row['block_title'])
+
+                # Botón para abrir el popover de etiquetado del bloque después del título
+                with st.popover(f"Etiquetar ***{row['block_title']}***"):
+                    render_tag_form(tags_schema, current_card_title, contents, block_index)
+                
                 text_content = row['text']
                 text_lines = text_content.split('\n')
                 for line in text_lines:
@@ -63,15 +77,6 @@ with col1:
                             st.write(line)
                     else:
                         st.write(line)
-
-                # Botón para abrir el modal de etiquetado del bloque
-                modal = Modal(f"Etiquetar Bloque *{row['block_title']}*", key=f"modal-{block_index}")
-                if st.button(f"Etiquetar Bloque *{row['block_title']}*", key=f"button-{block_index}"):
-                    modal.open()
-
-                if modal.is_open():
-                    with modal.container():
-                        render_tag_form(modal, tags_schema, current_card_title, contents, block_index)
     else:
         st.write("No se encontró contenido para la tarjeta seleccionada.")
     st.markdown('</div>', unsafe_allow_html=True)
@@ -79,7 +84,8 @@ with col1:
 with col2:
     # Crear un contenedor con scroll para el formulario de etiquetado
     st.header('Etiquetado de la tarjeta')
-    render_tag_form(Modal("Etiquetar Tarjeta", key="modal-card"), tags_schema, current_card_title, contents)
+    with st.popover("Etiquetar Tarjeta"):
+        render_tag_form(tags_schema, current_card_title, contents)
 
 # Botón para guardar progreso
 if st.button('Guardar Progreso', key='save_progress'):

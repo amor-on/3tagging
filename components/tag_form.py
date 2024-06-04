@@ -1,7 +1,12 @@
 import streamlit as st
 from utils.tag_helpers import get_tags_for_level
+import pandas as pd
 
-def render_tag_form(modal, tags_schema, selected_card_title, contents, block_index=None):
+def render_tag_form(tags_schema, selected_card_title, contents, block_index=None):
+    # Asegurarse de que contents es un DataFrame
+    if not isinstance(contents, pd.DataFrame):
+        raise TypeError("contents debe ser un DataFrame")
+
     card_data = contents[contents['card_title'] == selected_card_title]
     
     if block_index is not None:
@@ -59,5 +64,4 @@ def render_tag_form(modal, tags_schema, selected_card_title, contents, block_ind
                 tag['name']: st.session_state.get(f"{tag['name']}_{tag['type']}_card_{selected_card_title}", None)
                 for tag in tags_for_card
             }
-        modal.close()
         st.rerun()  # Para actualizar la UI

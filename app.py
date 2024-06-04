@@ -43,8 +43,8 @@ with open('assets/styles.css') as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 # Renderizar la barra lateral
-selected_card = render_sidebar(nav)
-current_card_title = nav.get_current_card()
+selected_card = render_sidebar(nav, contents)
+current_card_title = st.session_state.current_card_title
 card_data = contents[contents['card_title'] == current_card_title]
 
 # Crear columnas para contenido y formulario de etiquetado
@@ -60,7 +60,7 @@ with col1:
                 st.subheader(row['block_title'])
 
                 # Botón para abrir el popover de etiquetado del bloque después del título
-                with st.popover(f"Etiquetar ***{row['block_title']}***"):
+                with st.popover(label=f"Etiquetar ***{row['block_title']}***"):
                     render_tag_form(tags_schema, current_card_title, contents, block_index)
                 
                 text_content = row['text']

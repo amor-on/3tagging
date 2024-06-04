@@ -1,0 +1,12 @@
+[
+    {
+        "unit": "Texto de la unidad parte 1. Texto de la unidad parte 2. Texto de la unidad parte 3.",
+        "content_to_tag": "Texto de la unidad parte N.",
+        "metadata": [
+            {
+                "course": "1º ESO",
+                "edad": "12-13 años"
+            }
+        ]
+    }
+]

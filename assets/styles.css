@@ -11,3 +11,13 @@
     padding: 10px;
     box-shadow: 2px 0 5px rgba(0,0,0,0.1);
 }
+
+.blue-popover button {
+    width: 150px;
+    height: 60px;
+    background-color: blue;
+    color: white;
+    border-radius: 5px;
+    white-space: nowrap;
+}
+

@@ -5,6 +5,7 @@ from components.tag_form import render_tag_form
 from utils.save_data import save_tagged_data
 from utils.navigation import Navigation
 import pandas as pd
+from streamlit_extras.stylable_container import stylable_container
 
 # Inicializar el estado de la sesión
 if 'current_card_index' not in st.session_state:
@@ -59,9 +60,19 @@ with col1:
             with st.container():
                 st.subheader(row['block_title'])
 
-                # Botón para abrir el popover de etiquetado del bloque después del título
-                with st.popover(label=f"Etiquetar ***{row['block_title']}***"):
-                    render_tag_form(tags_schema, current_card_title, contents, block_index)
+                with stylable_container(
+                    key="green_popover",
+                    css_styles="""
+                    button {
+                        height: 20px;
+                        background-color: #5497AD;
+                        color: white;
+                        border-radius: 10px;
+                        white-space: nowrap;
+                    }""",
+                ):
+                    with st.popover(label=f"Etiquetar ***{row['block_title']}***"): 
+                        render_tag_form(tags_schema, current_card_title, contents, block_index)
                 
                 text_content = row['text']
                 text_lines = text_content.split('\n')
@@ -89,7 +100,17 @@ with col2:
 
 # Botón para guardar progreso
 if st.button('Guardar Progreso', key='save_progress'):
-    block_output_path = 'data/contents_tagged.csv'
     card_output_path = 'data/cards_tagged.csv'
-    save_tagged_data(contents, tags_schema, block_output_path, card_output_path)
+    save_tagged_data(contents, tags_schema, None, card_output_path)
     st.success('Progreso guardado correctamente.')
+    
+    # Cargar los datos guardados
+    tagged_card = pd.read_csv(card_output_path)
+    
+    # Crear el botón de descarga
+    st.download_button(
+        label="Descargar CSV de tarjeta etiquetada",
+        data=tagged_card.to_csv(index=False).encode('utf-8'),
+        file_name='card_tagged.csv',
+        mime='text/csv'
+    )
